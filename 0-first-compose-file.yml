@@ -1,0 +1,16 @@
+version: '3'
+services:
+  web:
+    image: app
+    ports:
+    - "5000:5000"
+    volumes:
+    - logvolume01:/var/log
+    depends_on:
+    - redis
+  redis:
+    image: redis
+volumes:
+  logvolume01: {}
+
+
