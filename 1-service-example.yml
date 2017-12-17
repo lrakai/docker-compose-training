@@ -1,0 +1,22 @@
+version: '3'
+services:
+  proxy:
+    ${IMAGE}: 'redis:${REDIS_TAG}'
+    networks:
+      - frontend
+  app:
+    image: repo/app
+    networks:
+      - frontend
+      - backend
+  db:
+    image: redis
+    networks:
+      backend:
+        aliases:
+        - database
+networks:
+  frontend:
+  backend:
+    external: true
+
