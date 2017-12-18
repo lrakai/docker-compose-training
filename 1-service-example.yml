@@ -1,7 +1,7 @@
 version: '3'
 services:
   proxy:
-    ${IMAGE}: 'redis:${REDIS_TAG}'
+    image: 'redis:${REDIS_TAG}'
     networks:
       - frontend
   app:
