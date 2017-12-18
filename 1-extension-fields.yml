@@ -1,0 +1,16 @@
+version: '3.4'
+x-logging:
+  &default-logging
+  options:
+    max-size: '10m'
+    max-file: 7
+  driver: json-file
+services:
+  web:
+    image: repo/app
+    logging: *default-logging
+  cache:
+    image: redis
+    logging: *default-logging
+
+    
