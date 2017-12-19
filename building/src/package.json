@@ -1,5 +1,5 @@
 {
-  "name": "docker-software-delivery",
+  "name": "accumulator",
   "version": "1.0.0",
   "private": true,
   "scripts": {
