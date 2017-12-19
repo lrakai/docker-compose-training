@@ -10,4 +10,8 @@ services:
       - NODE_ENV=production
     restart: always
   app-db:
+    volumes: 
+      - db-data:/data/db
     restart: always
+volumes:
+  db-data:
