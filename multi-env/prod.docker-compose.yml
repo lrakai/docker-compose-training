@@ -1,0 +1,12 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: prod.dockerfile
+    ports:
+      - '80:8080'
+    environment:
+      - NODE_ENV=production
+    restart: always
+  app-db:
+    restart: always

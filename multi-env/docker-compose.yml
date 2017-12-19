@@ -1,0 +1,18 @@
+version: '3'
+services:
+  app:
+    image: your-registry:5000/accumulator
+    environment:
+      - DB_HOST=app-db
+    depends_on:
+      - app-db
+    networks:
+      - backend
+  app-db:
+    image: mongo:3
+    networks:
+      - backend
+networks:
+  backend:
+
+  
