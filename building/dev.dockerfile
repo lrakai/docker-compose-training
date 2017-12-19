@@ -12,4 +12,4 @@ RUN npm install
 EXPOSE 3000
 
 # Watch for changes
-CMD ["nodemon", "-L", "/usr/src/bin/www"]
+CMD ["nodemon", "-L", "/src/app/bin/www"]

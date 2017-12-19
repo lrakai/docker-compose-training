@@ -9,8 +9,9 @@ services:
       - '3000:3000'
     environment:
       - NODE_ENV=development
+      - DB_HOST=app-db
     volumes:
-      - './src:/src'
+      - './src:/src/app'
     depends_on:
       - app-db
     networks:
