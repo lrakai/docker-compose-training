@@ -3,17 +3,13 @@ FROM node:6
 # use nodemon for development
 RUN npm install --global nodemon
 # use cached layer for node modules
-ADD src/package.json /tmp/package.json
-RUN cd /tmp && npm install
-RUN mkdir -p /usr/src && cp -a /tmp/node_modules /usr/src/
+RUN mkdir src
+WORKDIR /src
+ADD src/package.json /src/package.json
+RUN npm install
 
-WORKDIR /usr/src
-# Copy source files into container
-ADD ./src /usr/src
-# Development app runs on port 5000
-EXPOSE 5000
-# build the app
-RUN npm run build
+# Development app runs on port 3000
+EXPOSE 3000
 
 # Watch for changes
 CMD ["nodemon", "-L", "/usr/src/bin/www"]

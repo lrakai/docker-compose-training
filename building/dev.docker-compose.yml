@@ -4,10 +4,13 @@ services:
     build:
       context: .
       dockerfile: dev.dockerfile
+    image: accumulator
     ports:
-      - '5000:5000'
+      - '3000:3000'
     environment:
       - NODE_ENV=development
+    volumes:
+      - './src:/usr/src'
     depends_on:
       - app-db
     networks:
