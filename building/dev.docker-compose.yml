@@ -10,7 +10,7 @@ services:
     environment:
       - NODE_ENV=development
     volumes:
-      - './src:/usr/src'
+      - './src:/src'
     depends_on:
       - app-db
     networks:
