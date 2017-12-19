@@ -1,0 +1,634 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "virtualMachineName": {
+      "type": "string",
+      "defaultValue": "ca-lab-vm"
+    },
+    "registryMachineName": {
+      "type": "string",
+      "defaultValue": "registry"
+    },
+    "productionMachineName": {
+      "type": "string",
+      "defaultValue": "production"
+    },
+    "virtualMachineSize": {
+      "type": "string",
+      "defaultValue": "Basic_A1"
+    },
+    "adminUsername": {
+      "type": "string",
+      "defaultValue": "student"
+    },
+    "virtualNetworkName": {
+      "type": "string",
+      "defaultValue": "ca-lab-vnet"
+    },
+    "networkInterfaceName": {
+      "type": "string",
+      "defaultValue": "ca-lab-vm001"
+    },
+    "registryInterfaceName": {
+      "type": "string",
+      "defaultValue": "registry001"
+    },
+    "productionInterfaceName": {
+      "type": "string",
+      "defaultValue": "production001"
+    },
+    "networkSecurityGroupName": {
+      "type": "string",
+      "defaultValue": "ca-lab-vm-nsg"
+    },
+    "adminPassword": {
+      "type": "string",
+      "defaultValue": "1Cloud_Academy_Labs!"
+    },
+    "storageAccountName": {
+      "type": "string",
+      "defaultValue": "calabdisks01"
+    },
+    "storageAccountType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS"
+    },
+    "addressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/24"
+    },
+    "subnetName": {
+      "type": "string",
+      "defaultValue": "default"
+    },
+    "subnetPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/24"
+    },
+    "publicIpAddressName": {
+      "type": "string",
+      "defaultValue": "ca-lab-vm-ip"
+    },
+    "publicIpAddressType": {
+      "type": "string",
+      "defaultValue": "Dynamic"
+    },
+    "registryPublicIpAddressName": {
+      "type": "string",
+      "defaultValue": "registry-ip"
+    },
+    "productionPublicIpAddressName": {
+      "type": "string",
+      "defaultValue": "production-ip"
+    }
+  },
+  "resources": [
+    {
+      "name": "[parameters('virtualMachineName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2016-04-30-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', parameters('networkInterfaceName'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', replace(concat(parameters('storageAccountName'), resourceGroup().name),'-', ''))]"
+      ],
+      "properties": {
+        "osProfile": {
+          "computerName": "[parameters('virtualMachineName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualMachineSize')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "OpenLogic",
+            "offer": "CentOS",
+            "sku": "7.3",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "vhd": {
+              "uri": "[concat(concat(reference(resourceId('Microsoft.Storage/storageAccounts', replace(concat(parameters('storageAccountName'), resourceGroup().name),'-', '')), '2015-06-15').primaryEndpoints['blob'], 'vhds/'), parameters('virtualMachineName'), '20170526205708.vhd')]"
+            },
+            "name": "[parameters('virtualMachineName')]"
+          },
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "[parameters('registryMachineName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2016-04-30-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', parameters('registryInterfaceName'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', replace(concat(parameters('storageAccountName'), resourceGroup().name),'-', ''))]"
+      ],
+      "properties": {
+        "osProfile": {
+          "computerName": "[parameters('registryMachineName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualMachineSize')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "OpenLogic",
+            "offer": "CentOS",
+            "sku": "7.3",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "vhd": {
+              "uri": "[concat(concat(reference(resourceId('Microsoft.Storage/storageAccounts', replace(concat(parameters('storageAccountName'), resourceGroup().name),'-', '')), '2015-06-15').primaryEndpoints['blob'], 'vhds/'), parameters('registryMachineName'), '20170526205708.vhd')]"
+            },
+            "name": "[parameters('registryMachineName')]"
+          },
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('registryInterfaceName'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "[parameters('productionMachineName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2016-04-30-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', parameters('productionInterfaceName'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', replace(concat(parameters('storageAccountName'), resourceGroup().name),'-', ''))]"
+      ],
+      "properties": {
+        "osProfile": {
+          "computerName": "[parameters('productionMachineName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualMachineSize')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "OpenLogic",
+            "offer": "CentOS",
+            "sku": "7.3",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "vhd": {
+              "uri": "[concat(concat(reference(resourceId('Microsoft.Storage/storageAccounts', replace(concat(parameters('storageAccountName'), resourceGroup().name),'-', '')), '2015-06-15').primaryEndpoints['blob'], 'vhds/'), parameters('productionMachineName'), '20170526205708.vhd')]"
+            },
+            "name": "[parameters('productionMachineName')]"
+          },
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('productionInterfaceName'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "microsoft.docker-lab-vm",
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "https://gallery.azure.com/artifact/20161101/microsoft.docker-arm.1.1.0/Artifacts/MainTemplate.json"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "[parameters('virtualMachineName')]"
+          },
+          "location": {
+            "value": "[resourceGroup().location]"
+          },
+          "dockerPort": {
+            "value": "2376"
+          },
+          "dockerCACert": {
+            "value": "-----BEGIN CERTIFICATE-----\nMIIFmTCCA4GgAwIBAgIJAPJaED7AhAQSMA0GCSqGSIb3DQEBCwUAMGIxCzAJBgNV\nBAYTAlVTMQswCQYDVQQIDAJDQTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNjbzEWMBQG\nA1UECgwNQ2xvdWQgQWNhZGVteTEWMBQGA1UEAwwNKi5jYS1sYWJzLmNvbTAgFw0x\nNzA3MDYwMzA0MDlaGA8yMTE3MDYxMjAzMDQwOVowYjELMAkGA1UEBhMCVVMxCzAJ\nBgNVBAgMAkNBMRYwFAYDVQQHDA1TYW4gRnJhbmNpc2NvMRYwFAYDVQQKDA1DbG91\nZCBBY2FkZW15MRYwFAYDVQQDDA0qLmNhLWxhYnMuY29tMIICIjANBgkqhkiG9w0B\nAQEFAAOCAg8AMIICCgKCAgEAxXzi366wOLhpsf3iNqNwW6fxC+fF1qxmDZNiEkRN\nyAVhErL7yi5ueygFq1yCa5SDBzM6wypE8qURyCeGh6KlLWqBUEQPA5xiDbdrgS24\nf2XGrcZyFg7J6x6RoJv/0MCbfSmcS6g9XjUoMEHxbcu5xwAgKlhflPFEg1Aiw308\n5tEc2aDi18HpZ1c6fz1SuFIYsovJxcRSE6vH8k3WvwL+DOAJSfTW4PDmATCaXpwW\nGHblB0W34CGA/nAw6JP/5iOW1F+0M5kXTUKDJqQgxBGip6rqTHK74f6TsD1Ne1uY\nJhXDOeZCDQN5OBnUTcA9heABa1WxBq1SzXj13D8GT+hy8jq/2tsbQ0FQvDigjIMV\nLqQKVzCtzxVTnFZ/+uqz6WnHiNAZJYXBE+qE6QP5qGffsIkxl+QOO2E8+TdoyOTB\n2X1hh6gpw8xSdLU8l7I3utDwlRvs5Vdv534b6br+pdFZU8zhk0q6mxCBPxCDG6FY\nT5KhRw5gpUdZ9SA56lW/12jI39MqL8+vW4D3+3W195ashWH1cYfIju8b8eV8fH/D\nsVtHCntHj084A1FatdywuUGeY15YdliD4uNPmvbHJHgOB2cc5nvTP1jzBJFP8bJK\n1y3xQ+WDcnWf7NiNDEaZFKyVcJ5abkAjwMyqwzahVIdeNbfYyi4tSZRgUDenCK6T\nmNMCAwEAAaNQME4wHQYDVR0OBBYEFKozb/pQ956bvSlDb1Xt4yUbIF2rMB8GA1Ud\nIwQYMBaAFKozb/pQ956bvSlDb1Xt4yUbIF2rMAwGA1UdEwQFMAMBAf8wDQYJKoZI\nhvcNAQELBQADggIBAGW/SFFTdk4ee5jfTziJAiukTyW4s5ClnUGLyESx1TuExscl\nlwoiOztqe4Vzt6P0y2G4czpBAVfEN4jpisnpND0Vdhdiy20ZrzaEWjGaGWriYYXg\n2aBD+Y0bqIH6IENjfrmUJzvIQIYaxUgVUODSNNwHoipEaGx789wmwJEAatme0klU\n8f/6CoDbzdXYF1OtCutb1rVAkZh3aZRTSX1/mQjf9v4LZBTs0nMsusDoUHaWbNBD\nAvg4RhrEgU6Oe0YKE7UowaHZ/vEV/OpfmeXxLQEwFmYH+TPvVZLmdZupdZGYgF7d\nSQEhFylQgaZfSDILcMAIQw1QChCLC9wDXniuOpXmvDFcq2NJOP4NWCjMENqdxmvs\nm8xs3jSwo6SXyttz0XgWMoY19cGHX/Yrp4czZeTxCvCVQBhEhSH2LlstM7Vk6MBu\nOu9W7Abc2jOTXboPj49QeSWuZvVu86JUrlDCuSv4w8C7ftsUMaQVtTNZESsbItjR\n3PScuSMPDUfguqAVAPMeJc0coSd0NujIz0grlvmLJmz2r021vWLCzFM/am+4eEOG\nXxdi5KSAKl34mCsbWEpICFJ9oDqEmVJs8z/aL502VEDrL5Wvpn3CbBgY3jCmFdJG\nTgXGq7Ty+YVsckCnXDAkmuTZ7vxXSiyozHROeUavNrybvBECYuRziYEBIKZY\n-----END CERTIFICATE-----\n"
+          },
+          "dockerServerCert": {
+            "value": "-----BEGIN CERTIFICATE-----\nMIIFDzCCAvegAwIBAgIJAMbG41YxwLTmMA0GCSqGSIb3DQEBCwUAMGIxCzAJBgNV\nBAYTAlVTMQswCQYDVQQIDAJDQTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNjbzEWMBQG\nA1UECgwNQ2xvdWQgQWNhZGVteTEWMBQGA1UEAwwNKi5jYS1sYWJzLmNvbTAgFw0x\nNzA3MDYwMzEwNTRaGA8yMTE3MDYxMjAzMTA1NFowETEPMA0GA1UEAwwGY2xpZW50\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAsISe/SdxcapeaT/8egoO\nj5MjnRrago+8CcSGPAH9l6TB+QtM0gkrMeasybTt1DzLvU86jETG/qvJebyuxbrg\nYteDHYGWnWsJ6Qo3qIhO/LmFibj7JYONf4CBGFazCJr8X1DLPZDEvbFC5OG9RGDl\n84a9G6qVDRkwyJ17TjkgAVy2HsRRa7vmaL942OmIQSr8x+h/Fu++C4AQA+r67Sxo\nOWd/n4aHgNA0bQgpGVpa+9+mB8RlUdCtiewp+AiN0j7FE5t0ebdzT4A+8+f0P+/m\n9ZOfqMxH0+WJFraqz92mPOCv+o+2VDmI0ftwIqsKkSpCW0jJ8oloSZS54sWXroJu\nNyLD0zYclsMHSDIRJ7vlwRQt+R76eJhopGJfGLk9+ZQfx6AlwvqCjScjlETEwXXR\nMqClWnI2QHe9aZF+uYYw4XCN4w406IFnxl9p643ek9mYt+K0RQ1tF8zxYGT0hp5O\n1SncgZBrjlSxvl/xsNhlUU5B3Ykv2ulhuTyKPD3TLnTJBJ1OlBPq2MkbXRaxiG6y\nq6crhzTe1Y8+YgDAvzUWQfTOJi1IUlDayjoXC6fWmH60V2KC5Fq1E+Wauq1Hobtd\nRa8hjMe3m8XjO19GwS4r7fWRZkxK26hZi2/3QHmMTdJeV3JuZ17KKB1bUpY78n4I\nkCukqN8lYt6q+9cTwCfl8Q8CAwEAAaMXMBUwEwYDVR0lBAwwCgYIKwYBBQUHAwIw\nDQYJKoZIhvcNAQELBQADggIBAFox1UCYnwn1tYSHHDv5bTdEdC776Rbefqajwmz8\nipP8sEXxecfsCpTCjbR74oZA5dgnJCSgArxT54nMhdprk0Fl9tCIS21D81dOslRb\nS4REQRf73uSdMG5LSUHxlcqAsV9XVax7d5fGD/IJRnzoYePrLeLqfaGX55PjEzfU\nMIrM/vPNVeVuIflIPfmGBoUDksoMoEdOUhuqKy2b5knRrnof70YLY+yqvON66hmR\nRQFKLGTnLDII23ljk7qr5sstsPoXp7SZRgaGRMhdBd6NZF1cqV18iMkV7RYgoUl0\nDmECr16E2cOoiCRGcKQ9nIT5V0cy0F8S4lj0LWKMzcNSkCPyZqUJt4fLoc6XDbnO\nCo8RGHxlrDM4M7EMim8n9I2HLjISSZ8h1ka1cLngJT7BD7IdTMjwToRVl/OIK/QI\nFzBLjEag9TYSwj6A7/4TXsMn2ZLRWKvz62ziHRm3bc1yKw/fIavjJlFGMXX+mH96\nLmIUWL71Kz/ciIsLP/gNss+uPz+9ZxKoFPOt62xc6RUIZgvhonUfXOfVuj49glLb\nBv5ojimha2LQBYW7rWxo6746CPvlHFqwKshJ4MPLB0q2dlTPc6IXHoYa0KLVmmSr\nFgWrqRP+QYgTEW6xIjnCwMbVkNqSzIhbPm7Lvp1kUGFMgJ0rQI/J8dGzD0gARi4g\nzEr9\n-----END CERTIFICATE-----\n"
+          },
+          "dockerServerKey": {
+            "value": "-----BEGIN RSA PRIVATE KEY-----\n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\n-----END RSA PRIVATE KEY-----\n"
+          }
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName'))]"
+      ]
+    },
+    {
+      "name": "lab-vm.hosts-config",
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "https://gallery.azure.com/artifact/20161101/microsoft.custom-script-linux-arm.2.0.50/Artifacts/MainTemplate.json"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "[parameters('virtualMachineName')]"
+          },
+          "location": {
+            "value": "[resourceGroup().location]"
+          },
+          "fileUris": {
+            "value": []
+          },
+          "commandToExecute": {
+            "value": "bash -c \"echo 10.0.0.5 registry.ca-labs.com >> /etc/hosts && echo 10.0.0.6 production.ca-labs.com >> /etc/hosts && wget -O /tmp/server-cert.pem https://raw.githubusercontent.com/cloudacademy/docker-software-delivery/master/.certs/server-cert.pem &&  mkdir -p /etc/docker/certs.d/registry.ca-labs.com:5000/ && cp /tmp/server-cert.pem /etc/docker/certs.d/registry.ca-labs.com:5000/ca.crt\""
+          }
+        }
+      },
+      "dependsOn": [
+        "microsoft.docker-lab-vm"
+      ]
+    },
+    {
+      "name": "microsoft.docker-registry",
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "https://gallery.azure.com/artifact/20161101/microsoft.docker-arm.1.1.0/Artifacts/MainTemplate.json"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "[parameters('registryMachineName')]"
+          },
+          "location": {
+            "value": "[resourceGroup().location]"
+          },
+          "dockerPort": {
+            "value": "2376"
+          },
+          "dockerCACert": {
+            "value": "-----BEGIN CERTIFICATE-----\nMIIFmTCCA4GgAwIBAgIJAPJaED7AhAQSMA0GCSqGSIb3DQEBCwUAMGIxCzAJBgNV\nBAYTAlVTMQswCQYDVQQIDAJDQTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNjbzEWMBQG\nA1UECgwNQ2xvdWQgQWNhZGVteTEWMBQGA1UEAwwNKi5jYS1sYWJzLmNvbTAgFw0x\nNzA3MDYwMzA0MDlaGA8yMTE3MDYxMjAzMDQwOVowYjELMAkGA1UEBhMCVVMxCzAJ\nBgNVBAgMAkNBMRYwFAYDVQQHDA1TYW4gRnJhbmNpc2NvMRYwFAYDVQQKDA1DbG91\nZCBBY2FkZW15MRYwFAYDVQQDDA0qLmNhLWxhYnMuY29tMIICIjANBgkqhkiG9w0B\nAQEFAAOCAg8AMIICCgKCAgEAxXzi366wOLhpsf3iNqNwW6fxC+fF1qxmDZNiEkRN\nyAVhErL7yi5ueygFq1yCa5SDBzM6wypE8qURyCeGh6KlLWqBUEQPA5xiDbdrgS24\nf2XGrcZyFg7J6x6RoJv/0MCbfSmcS6g9XjUoMEHxbcu5xwAgKlhflPFEg1Aiw308\n5tEc2aDi18HpZ1c6fz1SuFIYsovJxcRSE6vH8k3WvwL+DOAJSfTW4PDmATCaXpwW\nGHblB0W34CGA/nAw6JP/5iOW1F+0M5kXTUKDJqQgxBGip6rqTHK74f6TsD1Ne1uY\nJhXDOeZCDQN5OBnUTcA9heABa1WxBq1SzXj13D8GT+hy8jq/2tsbQ0FQvDigjIMV\nLqQKVzCtzxVTnFZ/+uqz6WnHiNAZJYXBE+qE6QP5qGffsIkxl+QOO2E8+TdoyOTB\n2X1hh6gpw8xSdLU8l7I3utDwlRvs5Vdv534b6br+pdFZU8zhk0q6mxCBPxCDG6FY\nT5KhRw5gpUdZ9SA56lW/12jI39MqL8+vW4D3+3W195ashWH1cYfIju8b8eV8fH/D\nsVtHCntHj084A1FatdywuUGeY15YdliD4uNPmvbHJHgOB2cc5nvTP1jzBJFP8bJK\n1y3xQ+WDcnWf7NiNDEaZFKyVcJ5abkAjwMyqwzahVIdeNbfYyi4tSZRgUDenCK6T\nmNMCAwEAAaNQME4wHQYDVR0OBBYEFKozb/pQ956bvSlDb1Xt4yUbIF2rMB8GA1Ud\nIwQYMBaAFKozb/pQ956bvSlDb1Xt4yUbIF2rMAwGA1UdEwQFMAMBAf8wDQYJKoZI\nhvcNAQELBQADggIBAGW/SFFTdk4ee5jfTziJAiukTyW4s5ClnUGLyESx1TuExscl\nlwoiOztqe4Vzt6P0y2G4czpBAVfEN4jpisnpND0Vdhdiy20ZrzaEWjGaGWriYYXg\n2aBD+Y0bqIH6IENjfrmUJzvIQIYaxUgVUODSNNwHoipEaGx789wmwJEAatme0klU\n8f/6CoDbzdXYF1OtCutb1rVAkZh3aZRTSX1/mQjf9v4LZBTs0nMsusDoUHaWbNBD\nAvg4RhrEgU6Oe0YKE7UowaHZ/vEV/OpfmeXxLQEwFmYH+TPvVZLmdZupdZGYgF7d\nSQEhFylQgaZfSDILcMAIQw1QChCLC9wDXniuOpXmvDFcq2NJOP4NWCjMENqdxmvs\nm8xs3jSwo6SXyttz0XgWMoY19cGHX/Yrp4czZeTxCvCVQBhEhSH2LlstM7Vk6MBu\nOu9W7Abc2jOTXboPj49QeSWuZvVu86JUrlDCuSv4w8C7ftsUMaQVtTNZESsbItjR\n3PScuSMPDUfguqAVAPMeJc0coSd0NujIz0grlvmLJmz2r021vWLCzFM/am+4eEOG\nXxdi5KSAKl34mCsbWEpICFJ9oDqEmVJs8z/aL502VEDrL5Wvpn3CbBgY3jCmFdJG\nTgXGq7Ty+YVsckCnXDAkmuTZ7vxXSiyozHROeUavNrybvBECYuRziYEBIKZY\n-----END CERTIFICATE-----\n"
+          },
+          "dockerServerCert": {
+            "value": "-----BEGIN CERTIFICATE-----\nMIIFMzCCAxugAwIBAgIJAMbG41YxwLTlMA0GCSqGSIb3DQEBCwUAMGIxCzAJBgNV\nBAYTAlVTMQswCQYDVQQIDAJDQTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNjbzEWMBQG\nA1UECgwNQ2xvdWQgQWNhZGVteTEWMBQGA1UEAwwNKi5jYS1sYWJzLmNvbTAgFw0x\nNzA3MDYwMzA3MDBaGA8yMTE3MDYxMjAzMDcwMFowGDEWMBQGA1UEAwwNKi5jYS1s\nYWJzLmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBANU6xeJ/edar\nGYeHhwXD5d4Hke4xFVKaoeyY65dvtH3kFo1/kUWFx5wvnyMC9MRPpT2EXHV0AtX6\n0SDSVDE0UASq25kWbfJjNNEeWYvxo5kYMunKztfiUbboLtxlzHPlkioxJSRAn3yz\nnwCXNt/n7U1uvdfAHI9CBgfiUjpIJVcnoJp/Z/UfYIWwJPA+XdCdEejHI5yQHqw+\nC/QlqxJ85IIUva0UTHd0kTAHykb39pvd69rBdogeYxgWbmuTCUgzE5/Y90XkNKX0\noNRv2wTNWc/gqUvEPlhfHGPj3erCEGFW3P/hM6jVlqAm10mh7dhrE2zTJ/uBCAuC\n6uyVY6P6SsveQjYpmuy7gch3KyCARPn7tle+TpCo3LIaOZcybJlXdO5zvONkSl1j\nLzwTQu/ZYVLlPTM2iJlpZWIQiqqnuQoi9omrYaWnlxnSQejbRIRdecvfWaDvZlSK\n0+eyyjqwGpXHRGYr1sEC827ymuFjbuXt8mbXSTavyAxaoZXLTpq8YitHBFqWRpJq\nPvUYWzglD29NecP8b0jYsBqqXWxfQHmrASEg27ewNHpdQsUbpkiSnQTTNANohGBz\nY6oORC8Zl86WcJHQnlEz2HwiMUPEc/6jRusQZIR7am4ZtGWRwn30jaiCuXLEPuPV\nOheGDp+9XfbOynOP0onn/ZheNA+Ng9C5AgMBAAGjNDAyMDAGA1UdEQQpMCeCDSou\nY2EtbGFicy5jb22HBAoAAASHBAoAAAWHBAoAAAaHBH8AAAEwDQYJKoZIhvcNAQEL\nBQADggIBALmYnYqu48LAJg8p6FItCKmTc0AEe8pp/XlBEm8nQqG7aE8rxDX5spNY\n1urlgHu2Xtmphs9Jz0hb2NE9jUL8t2K33ZrKOc4JyGhQrfJk5LI0OOWa2Tzvbny6\nrtrJfRihkIjeAi2uzhD8Y0aym0ZHiDU/kZ7ylkYi/lPVkigomeanoo0FjsyBM+Q9\nz+eGy6Yy3xLlq/YPwct+KRc5p+HpiKeSTajWRStGH8G8JKcc1dE6u7GeE337RXks\ncYxcAfyGWSpdEb6KRqqPsD7BTVmslfjf/hc0OJ8uEg0YC5F8Xf95qflWTs6qMX8R\nHeQ/F/IbvH2M9kWQs+qWwThEvgnbSxKgA/tPONv0Hp0C6cle9A6ItyKRRUFNgC+4\nosg27E2EpPO/OvIKWSAoKGDNenJHLW1bmnhzrGNBCSxrBFm6vMZ6nwUCQUJNLDht\nNdQBAOfr4ScHGTRHF7FO81QZV4/rKCInfoiqJUrFYeuAfeusQVnbEdx5xgoJINvo\nlR7CXOTZ8Ga4k2TlIGBnzHDLUlycm0U3VHdHvk2Sa8tHHVXEZSs6z0+XLQMZldAA\nim6/cv2bxQXwGqPRmNswKFpCTNZRS+Z/NqbIeLqSxdrEe7XyorERW/ngiMNIJgYV\n0o3gdLYBbMfZRGTh85ClbrJd8oMRLL0/DoFy6YB6qkxlh4uLd5vf\n-----END CERTIFICATE-----\n"
+          },
+          "dockerServerKey": {
+            "value": "-----BEGIN RSA PRIVATE KEY-----\n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\n-----END RSA PRIVATE KEY-----\n"
+          }
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('registryMachineName'))]"
+      ]
+    },
+    {
+      "name": "registry.hosts-config",
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "https://gallery.azure.com/artifact/20161101/microsoft.custom-script-linux-arm.2.0.50/Artifacts/MainTemplate.json"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "[parameters('registryMachineName')]"
+          },
+          "location": {
+            "value": "[resourceGroup().location]"
+          },
+          "fileUris": {
+            "value": []
+          },
+          "commandToExecute": {
+            "value": "bash -c \"echo 10.0.0.5 registry.ca-labs.com >> /etc/hosts && echo 10.0.0.6 production.ca-labs.com >> /etc/hosts && mkdir -p /etc/docker/certs.d/registry.ca-labs.com:5000/ && cp /etc/docker/cert.pem /etc/docker/certs.d/registry.ca-labs.com:5000/ca.crt\""
+          }
+        }
+      },
+      "dependsOn": [
+        "microsoft.docker-registry"
+      ]
+    },
+    {
+      "name": "microsoft.docker-production",
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "https://gallery.azure.com/artifact/20161101/microsoft.docker-arm.1.1.0/Artifacts/MainTemplate.json"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "[parameters('productionMachineName')]"
+          },
+          "location": {
+            "value": "[resourceGroup().location]"
+          },
+          "dockerPort": {
+            "value": "2376"
+          },
+          "dockerCACert": {
+            "value": "-----BEGIN CERTIFICATE-----\nMIIFmTCCA4GgAwIBAgIJAPJaED7AhAQSMA0GCSqGSIb3DQEBCwUAMGIxCzAJBgNV\nBAYTAlVTMQswCQYDVQQIDAJDQTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNjbzEWMBQG\nA1UECgwNQ2xvdWQgQWNhZGVteTEWMBQGA1UEAwwNKi5jYS1sYWJzLmNvbTAgFw0x\nNzA3MDYwMzA0MDlaGA8yMTE3MDYxMjAzMDQwOVowYjELMAkGA1UEBhMCVVMxCzAJ\nBgNVBAgMAkNBMRYwFAYDVQQHDA1TYW4gRnJhbmNpc2NvMRYwFAYDVQQKDA1DbG91\nZCBBY2FkZW15MRYwFAYDVQQDDA0qLmNhLWxhYnMuY29tMIICIjANBgkqhkiG9w0B\nAQEFAAOCAg8AMIICCgKCAgEAxXzi366wOLhpsf3iNqNwW6fxC+fF1qxmDZNiEkRN\nyAVhErL7yi5ueygFq1yCa5SDBzM6wypE8qURyCeGh6KlLWqBUEQPA5xiDbdrgS24\nf2XGrcZyFg7J6x6RoJv/0MCbfSmcS6g9XjUoMEHxbcu5xwAgKlhflPFEg1Aiw308\n5tEc2aDi18HpZ1c6fz1SuFIYsovJxcRSE6vH8k3WvwL+DOAJSfTW4PDmATCaXpwW\nGHblB0W34CGA/nAw6JP/5iOW1F+0M5kXTUKDJqQgxBGip6rqTHK74f6TsD1Ne1uY\nJhXDOeZCDQN5OBnUTcA9heABa1WxBq1SzXj13D8GT+hy8jq/2tsbQ0FQvDigjIMV\nLqQKVzCtzxVTnFZ/+uqz6WnHiNAZJYXBE+qE6QP5qGffsIkxl+QOO2E8+TdoyOTB\n2X1hh6gpw8xSdLU8l7I3utDwlRvs5Vdv534b6br+pdFZU8zhk0q6mxCBPxCDG6FY\nT5KhRw5gpUdZ9SA56lW/12jI39MqL8+vW4D3+3W195ashWH1cYfIju8b8eV8fH/D\nsVtHCntHj084A1FatdywuUGeY15YdliD4uNPmvbHJHgOB2cc5nvTP1jzBJFP8bJK\n1y3xQ+WDcnWf7NiNDEaZFKyVcJ5abkAjwMyqwzahVIdeNbfYyi4tSZRgUDenCK6T\nmNMCAwEAAaNQME4wHQYDVR0OBBYEFKozb/pQ956bvSlDb1Xt4yUbIF2rMB8GA1Ud\nIwQYMBaAFKozb/pQ956bvSlDb1Xt4yUbIF2rMAwGA1UdEwQFMAMBAf8wDQYJKoZI\nhvcNAQELBQADggIBAGW/SFFTdk4ee5jfTziJAiukTyW4s5ClnUGLyESx1TuExscl\nlwoiOztqe4Vzt6P0y2G4czpBAVfEN4jpisnpND0Vdhdiy20ZrzaEWjGaGWriYYXg\n2aBD+Y0bqIH6IENjfrmUJzvIQIYaxUgVUODSNNwHoipEaGx789wmwJEAatme0klU\n8f/6CoDbzdXYF1OtCutb1rVAkZh3aZRTSX1/mQjf9v4LZBTs0nMsusDoUHaWbNBD\nAvg4RhrEgU6Oe0YKE7UowaHZ/vEV/OpfmeXxLQEwFmYH+TPvVZLmdZupdZGYgF7d\nSQEhFylQgaZfSDILcMAIQw1QChCLC9wDXniuOpXmvDFcq2NJOP4NWCjMENqdxmvs\nm8xs3jSwo6SXyttz0XgWMoY19cGHX/Yrp4czZeTxCvCVQBhEhSH2LlstM7Vk6MBu\nOu9W7Abc2jOTXboPj49QeSWuZvVu86JUrlDCuSv4w8C7ftsUMaQVtTNZESsbItjR\n3PScuSMPDUfguqAVAPMeJc0coSd0NujIz0grlvmLJmz2r021vWLCzFM/am+4eEOG\nXxdi5KSAKl34mCsbWEpICFJ9oDqEmVJs8z/aL502VEDrL5Wvpn3CbBgY3jCmFdJG\nTgXGq7Ty+YVsckCnXDAkmuTZ7vxXSiyozHROeUavNrybvBECYuRziYEBIKZY\n-----END CERTIFICATE-----\n"
+          },
+          "dockerServerCert": {
+            "value": "-----BEGIN CERTIFICATE-----\nMIIFMzCCAxugAwIBAgIJAMbG41YxwLTlMA0GCSqGSIb3DQEBCwUAMGIxCzAJBgNV\nBAYTAlVTMQswCQYDVQQIDAJDQTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNjbzEWMBQG\nA1UECgwNQ2xvdWQgQWNhZGVteTEWMBQGA1UEAwwNKi5jYS1sYWJzLmNvbTAgFw0x\nNzA3MDYwMzA3MDBaGA8yMTE3MDYxMjAzMDcwMFowGDEWMBQGA1UEAwwNKi5jYS1s\nYWJzLmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBANU6xeJ/edar\nGYeHhwXD5d4Hke4xFVKaoeyY65dvtH3kFo1/kUWFx5wvnyMC9MRPpT2EXHV0AtX6\n0SDSVDE0UASq25kWbfJjNNEeWYvxo5kYMunKztfiUbboLtxlzHPlkioxJSRAn3yz\nnwCXNt/n7U1uvdfAHI9CBgfiUjpIJVcnoJp/Z/UfYIWwJPA+XdCdEejHI5yQHqw+\nC/QlqxJ85IIUva0UTHd0kTAHykb39pvd69rBdogeYxgWbmuTCUgzE5/Y90XkNKX0\noNRv2wTNWc/gqUvEPlhfHGPj3erCEGFW3P/hM6jVlqAm10mh7dhrE2zTJ/uBCAuC\n6uyVY6P6SsveQjYpmuy7gch3KyCARPn7tle+TpCo3LIaOZcybJlXdO5zvONkSl1j\nLzwTQu/ZYVLlPTM2iJlpZWIQiqqnuQoi9omrYaWnlxnSQejbRIRdecvfWaDvZlSK\n0+eyyjqwGpXHRGYr1sEC827ymuFjbuXt8mbXSTavyAxaoZXLTpq8YitHBFqWRpJq\nPvUYWzglD29NecP8b0jYsBqqXWxfQHmrASEg27ewNHpdQsUbpkiSnQTTNANohGBz\nY6oORC8Zl86WcJHQnlEz2HwiMUPEc/6jRusQZIR7am4ZtGWRwn30jaiCuXLEPuPV\nOheGDp+9XfbOynOP0onn/ZheNA+Ng9C5AgMBAAGjNDAyMDAGA1UdEQQpMCeCDSou\nY2EtbGFicy5jb22HBAoAAASHBAoAAAWHBAoAAAaHBH8AAAEwDQYJKoZIhvcNAQEL\nBQADggIBALmYnYqu48LAJg8p6FItCKmTc0AEe8pp/XlBEm8nQqG7aE8rxDX5spNY\n1urlgHu2Xtmphs9Jz0hb2NE9jUL8t2K33ZrKOc4JyGhQrfJk5LI0OOWa2Tzvbny6\nrtrJfRihkIjeAi2uzhD8Y0aym0ZHiDU/kZ7ylkYi/lPVkigomeanoo0FjsyBM+Q9\nz+eGy6Yy3xLlq/YPwct+KRc5p+HpiKeSTajWRStGH8G8JKcc1dE6u7GeE337RXks\ncYxcAfyGWSpdEb6KRqqPsD7BTVmslfjf/hc0OJ8uEg0YC5F8Xf95qflWTs6qMX8R\nHeQ/F/IbvH2M9kWQs+qWwThEvgnbSxKgA/tPONv0Hp0C6cle9A6ItyKRRUFNgC+4\nosg27E2EpPO/OvIKWSAoKGDNenJHLW1bmnhzrGNBCSxrBFm6vMZ6nwUCQUJNLDht\nNdQBAOfr4ScHGTRHF7FO81QZV4/rKCInfoiqJUrFYeuAfeusQVnbEdx5xgoJINvo\nlR7CXOTZ8Ga4k2TlIGBnzHDLUlycm0U3VHdHvk2Sa8tHHVXEZSs6z0+XLQMZldAA\nim6/cv2bxQXwGqPRmNswKFpCTNZRS+Z/NqbIeLqSxdrEe7XyorERW/ngiMNIJgYV\n0o3gdLYBbMfZRGTh85ClbrJd8oMRLL0/DoFy6YB6qkxlh4uLd5vf\n-----END CERTIFICATE-----\n"
+          },
+          "dockerServerKey": {
+            "value": "-----BEGIN RSA PRIVATE KEY-----\nMIIJKAIBAAKCAgEA1TrF4n951qsZh4eHBcPl3geR7jEVUpqh7Jjrl2+0feQWjX+R\nRYXHnC+fIwL0xE+lPYRcdXQC1frRINJUMTRQBKrbmRZt8mM00R5Zi/GjmRgy6crO\n1+JRtugu3GXMc+WSKjElJECffLOfAJc23+ftTW6918Acj0IGB+JSOkglVyegmn9n\n9R9ghbAk8D5d0J0R6McjnJAerD4L9CWrEnzkghS9rRRMd3SRMAfKRvf2m93r2sF2\niB5jGBZua5MJSDMTn9j3ReQ0pfSg1G/bBM1Zz+CpS8Q+WF8cY+Pd6sIQYVbc/+Ez\nqNWWoCbXSaHt2GsTbNMn+4EIC4Lq7JVjo/pKy95CNima7LuByHcrIIBE+fu2V75O\nkKjcsho5lzJsmVd07nO842RKXWMvPBNC79lhUuU9MzaImWllYhCKqqe5CiL2iath\npaeXGdJB6NtEhF15y99ZoO9mVIrT57LKOrAalcdEZivWwQLzbvKa4WNu5e3yZtdJ\nNq/IDFqhlctOmrxiK0cEWpZGkmo+9RhbOCUPb015w/xvSNiwGqpdbF9AeasBISDb\nt7A0el1CxRumSJKdBNM0A2iEYHNjqg5ELxmXzpZwkdCeUTPYfCIxQ8Rz/qNG6xBk\nhHtqbhm0ZZHCffSNqIK5csQ+49U6F4YOn71d9s7Kc4/Sief9mF40D42D0LkCAwEA\nAQKCAgAhW+GLjt/z2q7SyjwwhbZXpx2IgztPwgtlJYNuHLbDH0T7/CIxGz3gTH78\nDkFW2RMD7co9QdoTufqvxNgRHpsKL+TNLXoj+qtPsAzYXQR4NhX5B5aWpbyc/fQe\n3PpAg4D7gtbJtiZ9buiIQh/+pZ01iQbAUzjknLKu1xSAM7tLyFJS+W29JpyGLcmJ\noGgy8+/SWB1VKCL0VXyvRJlf+hQR2cbW5h8UbTMtrXpS4gY92llEzxGJOB/Oq+u4\nfrdsCTmfv2ToFUy7Tes/cQR12t6bLA2wYdJTJwYdBpA4YwYHBHzst0HKvyeihJEX\n3vKD8jSGyP4vVb95dZDlVHXTOJwswaiU9zdHjZxsnh/mToKGOheatnTY+3XTOUoo\nPbquSVbfsQCuvfodBKzcAOwhVOH+ZO6bDvaPEbwQdMXQUJ0L+8rvL1YuXz9mycwJ\ng4dXWPOoEFvClH0SHdGEebztbY9R5Sn32Wjloo6qC1ldDnpBkCKTE+5g5a3bCZLI\nnuedDCa9qSB45RCo+pxKv5gKaoWz61SwzDP3SngWbqizXlBuqSSZRdiyLD+psjOb\nB2cfZ8OjZKxuWfqMuzFWgSyiCnG5Li41dtdUxOQz5fA8mYJ6tws8U0lZGAqVg5ny\nQPZvauPTI0fZd4wJdmWWLSiLzkEQZR1gIMT+cKqafoqSgoao1QKCAQEA+LIufbqZ\ndSm1qfniGWaXyoiWcInFZzcI6kPHGHKuORjjMFp1PTcaTxRLA/+AWQLkYj2UJYZV\nmpHN+gAeoKLsqQ9KSnCQm0+we3eg4rJyBli+DD5wXYs4rFO6E41GeySsevSw3tYu\n2C1q+6KzP44H44yIvdxxcFDkOikb8dYv/ITigCQtaoyBG93aaGX3u6gd9CsoFWXk\nfEq78DSH9EMzcic4AXQl+VsOKMtHNcOt/j4FeF6CktI+/TJNZtAepOMKDNZXfQsi\nvffrtqzIcCXtn6lQRJebN5Kg5Oy168GS6JEUmKKSpoeV59I20g9SuUjkXkG4m6ms\nmRuk/d8xPO6ggwKCAQEA233v9OChdAleHgB4SwiC/CzccVwKflMsavnLaQcgU1aZ\norRB/gGI3saoG5HHnT/DgXNTH6ZbEjAIBRtJOhAIbpHbRiQ/4gNlnSFWfQfzOPeh\nljAdXOgm9TS924bH82zS8Hs6RcSLyfBfJgyrSQX+g72NCiIFCl0yYMsdv8wP3ufA\nLbeApsG7VWN+A5tqWCwoJns5YVZbYu2f4DVGni3pxmo99C9qPaHenPOafIpFUM5G\n+yjr9qgM/n44z9LdEbZzMXRif8yEuGseVhdhvj5UsKwTusFXY/XTGBR3nzHr4zt4\n5WVIP7w5EWiplFgp9ybofQYj14r8E9tBUt83bJfNEwKCAQBuxbbNi7rko+Jlxoa9\n96Nus+4GTGdf9PSEnBHnQtV1Wy9+jxwfWxbd2FUdf8WkYBRn6bO+Dxq8EWukij8a\nH9e36baWd5MBiro6FGvV7dO6HfbwrzMPh36Dy3tbUBbvrMMitTC+4LnW0kwPr0WV\n7mZ3JVaW8sSYWX9+pGbtDhErsejNWM/d4J11UxkAXUK+FEDbTAm7ljnyXrtdX5ia\n5P/aPbvFcf2kFrm00+5w9SrfzrJTDg2s5fbmgmxVeifcG8CTPTmU2cvsv6v/HvDc\nexhfgGPfWYPqeeYucX0KeJs9+bkpz2fwwv2zVz/Ryr93Bg+qKC3ZL/dP7y9LYQmm\ncUePAoIBAQC7C6p2SwsroGQFOy9H+fvtvKkrLV1/449BppeSbFE+09jfT6/BLzud\nZTuTKvsp5VHNOiMHILQRXr8m4ubXRRx6ZW+waWnLSEvKyMM0j5bU4Cpim6QaLXgt\nlAGLV2OD7SQhbVHubJ0XvPDIsxkwhJwtVlYf4XfcKimpVM6ISPTpZyNdkjhfY08q\naDvWBRZuB0s759yxN29vccLBxYTlfYjv3k/njJSD6zKTHAF1yjthrjfNB0V2kCVq\nptPxPufHlWy7I0xhTj94DUjv4sMX5XQ0jp/Nkb/QXofCyIZcMqWrol3XVyVnsxYK\n4N9KnIs+pHiROq9GmplQrpMPdUt9DivjAoIBACr1d47rkZu9R2nTmGJmrA2sF/N+\nvROGc5GhenSZyHZsoG1ZSFCGgbhMF+0qBEm6GSv/KT2UYMkk1ud9KBj//djt1NDm\ntTu2vqcYb7+Hm3hjSFCRbJJ0h0kmyo83uUHcjRKsVybDMjMBh0wHPexpXf+8TN0m\nWvFMHc8rvhrQnVvQs+bikAb36ybO0/aDZc0f+Wbs7JMSyiIsnsQsJfjlNd2UTKi5\n4RgflF8RowebgjQXWQyr1GNKuoy9x/hbpwBja5iMrcJULIPe84Zv9RW0RtYEEFIs\nJ2sp5mbWhda6Wr+xZFJmtaspxIESc9d+DyGmxmfhd2mkECUsDn5M18F//Wk=\n-----END RSA PRIVATE KEY-----\n"
+          }
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('productionMachineName'))]"
+      ]
+    },
+    {
+      "name": "production.hosts-config",
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "https://gallery.azure.com/artifact/20161101/microsoft.custom-script-linux-arm.2.0.50/Artifacts/MainTemplate.json"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "[parameters('productionMachineName')]"
+          },
+          "location": {
+            "value": "[resourceGroup().location]"
+          },
+          "fileUris": {
+            "value": []
+          },
+          "commandToExecute": {
+            "value": "bash -c \"echo 10.0.0.5 registry.ca-labs.com >> /etc/hosts && echo 10.0.0.6 production.ca-labs.com >> /etc/hosts && mkdir -p /etc/docker/certs.d/registry.ca-labs.com:5000/ && cp /etc/docker/cert.pem /etc/docker/certs.d/registry.ca-labs.com:5000/ca.crt\""
+          }
+        }
+      },
+      "dependsOn": [
+        "microsoft.docker-production"
+      ]
+    },
+    {
+      "name": "[replace(concat(parameters('storageAccountName'), resourceGroup().name),'-', '')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2015-06-15",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "accountType": "[parameters('storageAccountType')]"
+      }
+    },
+    {
+      "name": "[parameters('virtualNetworkName')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2016-12-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('addressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[parameters('subnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnetPrefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[parameters('networkInterfaceName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2016-09-01",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]",
+        "[concat('Microsoft.Network/publicIpAddresses/', parameters('publicIpAddressName'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', parameters('networkSecurityGroupName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/', parameters('subnetName'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "10.0.0.4",
+              "publicIpAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName'))]"
+              }
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+        }
+      }
+    },
+    {
+      "name": "[parameters('publicIpAddressName')]",
+      "type": "Microsoft.Network/publicIpAddresses",
+      "apiVersion": "2016-09-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIpAllocationMethod": "[parameters('publicIpAddressType')]"
+      }
+    },
+    {
+      "name": "[parameters('registryInterfaceName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2016-09-01",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]",
+        "[concat('Microsoft.Network/publicIpAddresses/', parameters('registryPublicIpAddressName'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', parameters('networkSecurityGroupName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/', parameters('subnetName'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "10.0.0.5",
+              "publicIpAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIpAddresses', parameters('registryPublicIpAddressName'))]"
+              }
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+        }
+      }
+    },
+    {
+      "name": "[parameters('registryPublicIpAddressName')]",
+      "type": "Microsoft.Network/publicIpAddresses",
+      "apiVersion": "2016-09-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIpAllocationMethod": "[parameters('publicIpAddressType')]"
+      }
+    },
+    {
+      "name": "[parameters('productionInterfaceName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2016-09-01",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]",
+        "[concat('Microsoft.Network/publicIpAddresses/', parameters('productionPublicIpAddressName'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', parameters('networkSecurityGroupName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/', parameters('subnetName'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "10.0.0.6",
+              "publicIpAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIpAddresses', parameters('productionPublicIpAddressName'))]"
+              }
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+        }
+      }
+    },
+    {
+      "name": "[parameters('productionPublicIpAddressName')]",
+      "type": "Microsoft.Network/publicIpAddresses",
+      "apiVersion": "2016-09-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIpAllocationMethod": "[parameters('publicIpAddressType')]"
+      }
+    },
+    {
+      "name": "[parameters('networkSecurityGroupName')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2016-09-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow-docker-remote",
+            "properties": {
+              "priority": 1400,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "2376",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "allow-registry",
+            "properties": {
+              "priority": 1300,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "5000",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "allow-http-dev",
+            "properties": {
+              "priority": 1200,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "3000",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "allow-http",
+            "properties": {
+              "priority": 1100,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "80",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "default-allow-ssh",
+            "properties": {
+              "priority": 1000,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "22",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "adminUsername": {
+      "type": "string",
+      "value": "[parameters('adminUsername')]"
+    }
+  }
+}
