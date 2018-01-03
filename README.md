@@ -1,5 +1,5 @@
 # docker-compose-training
-Docker Compose artifacts created for my Manage Multi-Container Environments with Docker Compose Course
+Docker Compose artifacts created for my Managing Applications with Docker Compose Course on [Cloud Academy](https://cloudacademy.com)
 
 ## Course References
 The files and directories are referenced in specific lessons in the course. The following table gives the correspondence:
