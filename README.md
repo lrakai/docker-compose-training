@@ -3,6 +3,7 @@ Docker Compose artifacts created for my Manage Multi-Container Environments with
 
 ## Course References
 The files and directories are referenced in specific lessons in the course. The following table gives the correspondence:
+
 | Item          | Course Lessons          |
 | ------------- |-------------------------| 
 | `0-first-compose-file.yml`      | 2 - Docker Compose Overview, 3 - Anatomy of a Compose File | 
